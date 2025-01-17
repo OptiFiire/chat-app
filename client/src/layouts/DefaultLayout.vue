@@ -1,65 +1,20 @@
 <script setup>
-import { Search, Plus } from 'lucide-vue-next'
-import { onMounted, ref, reactive } from 'vue'
-import axios from 'axios';
-import { RouterView } from 'vue-router'
-import { Separator } from '@/components/ui/separator'
-import { useRouter, useRoute } from 'vue-router';
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarHeader,
-    SidebarInput,
-    SidebarInset,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarProvider,
-    SidebarRail,
-    SidebarTrigger,
-    SidebarGroupLabel,
-    SidebarGroupAction
-} from '@/components/ui/sidebar'
+import { useUserStore } from '@/misc/store';
+import { onMounted, ref } from 'vue'
+import axios from '@/misc/axios';
 
-
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger
-} from '@/components/ui/tooltip'
-
-
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import AccountDropdown from '@/components/AccountDropdown.vue'
-
-const data = {
-    directMessages: [
-        { title: 'Marcus', lastActivityBy: "You", newMessages: 0, lastMessage: "Holy cow, no", url: '#', isActive: true, },
-        { title: 'Emenem', lastActivityBy: "Emenem", newMessages: 2, lastMessage: "She has it", url: '#' },
-        { title: 'Drake', lastActivityBy: "Drake", newMessages: 4, lastMessage: "Are you restarted?", url: '#' }
-    ]
-}
-
-const user = reactive({
-    avatar: '',
-    name: '',
-    email: '',
-    biography: '',
-    username: ''
-});
-
+const user = useUserStore();
 const search = ref('');
+const chats = ref([])
 
 onMounted(async () => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-        const response = await axios('http://127.0.0.1:8000/api/users/me/', {
-            headers: { Authorization: `Token ${token}` },
-        });
-        Object.assign(user, response.data);
+    try {
+        const fetchedUser = await axios('/api/users/me/')
+        const fetchedChats = await axios('/api/chats/')
+        user.setUser(fetchedUser.data)
+        chats.value = fetchedChats.data
+    } catch (e) {
+        console.error(e);
     }
 });
 </script>
@@ -77,8 +32,8 @@ onMounted(async () => {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent>
-                <SidebarGroup>
+            <SidebarContent :class="chats.length > 0 ? null : 'flex justify-center items-center'">
+                <SidebarGroup v-if="chats.length > 0">
                     <SidebarGroupLabel>Direct Messages</SidebarGroupLabel>
                     <SidebarGroupAction>
                         <TooltipProvider>
@@ -92,36 +47,40 @@ onMounted(async () => {
                             </Tooltip>
                         </TooltipProvider>
                     </SidebarGroupAction>
-                    <SidebarGroupContent>
+                    <SidebarGroupContent v-if="chats.length > 0">
                         <SidebarMenu class="flex gap-1 flex-col">
-                            <a :href="item.url" v-for="item in data.directMessages" :key="item.title">
+                            <router-link class="duration-100" active-class="bg-white/5 rounded-2xl"
+                                v-for="item in chats" :key="item.id"
+                                :to="{ name: 'chat', params: { chatId: item.id } }">
                                 <SidebarMenuItem
                                     class="duration-100 flex gap-2 items-center hover:bg-white/10 rounded-2xl">
                                     <SidebarMenuButton class="h-max flex justify-between">
                                         <div class="flex gap-2 items-center justify-between w-full">
                                             <div class="flex gap-2 items-center">
-                                                <Avatar class="w-[36px] h-[36px]">
-                                                    <AvatarImage class="w-[36px]"
-                                                        src="https://i.pinimg.com/236x/68/31/12/68311248ba2f6e0ba94ff6da62eac9f6.jpg" />
-                                                    <AvatarFallback>CN</AvatarFallback>
-                                                </Avatar>
+                                                <AvatarComponent :src="item.partner.avatar"
+                                                    :fallback="item.partner.name" />
                                                 <div class="flex flex-col">
-                                                    <p class="max-w-40 truncate">{{ item.title }}</p>
-                                                    <p class="max-w-32 text-neutral-500 truncate">
-                                                        {{ item.lastActivityBy + ': ' + item.lastMessage }}
+                                                    <p class="max-w-40 truncate text-start">{{ item.partner.name }}</p>
+                                                    <p v-if="item.last_message"
+                                                        class="max-w-40 text-neutral-500 truncate">
+                                                        {{ item.last_message.sender.id == user.id
+                                                            ? 'You'
+                                                            : item.last_message.sender.name }}: {{ item.last_message.content
+                                                        }}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div
-                                                class="bg-neutral-200 text-neutral-950 size-[20px] text-[10px] text-center px-0 py-0 rounded-full">
-                                                {{ item.newMessages }}</div>
+                                            <div v-if="item.unread_messages_count > 0"
+                                                class="bg-neutral-200 text-neutral-950 font-bold size-[20px] text-[10px] text-center px-0 py-0 rounded-full">
+                                                {{ item.unread_messages_count }}</div>
                                         </div>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-                            </a>
+                            </router-link>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+                <p v-else class="text-neutral-500 text-center">No direct messages found.</p>
             </SidebarContent>
             <SidebarRail />
         </Sidebar>
@@ -133,12 +92,12 @@ onMounted(async () => {
                     <Separator orientation="vertical" class="mx-1 h-4" />
                     <h1>Chat App</h1>
                 </div>
-                <AccountDropdown :user="user" />
+                <AccountDropdown />
             </header>
-
-            <div class="flex flex-col h-full m-4 justify-center items-center">
+            <div class="flex flex-col h-full justify-center items-center">
                 <router-view />
             </div>
         </SidebarInset>
+
     </SidebarProvider>
 </template>

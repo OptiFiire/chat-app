@@ -32,7 +32,7 @@ class CustomUser(AbstractUser):
 
 class Chat(models.Model):
     id = models.BigIntegerField(unique=True, primary_key=True, default=random_uuid, editable=False)
-    participants = models.ManyToManyField(to=CustomUser, related_name="participants")
+    participants = models.ManyToManyField(CustomUser, related_name="chats")
     
     def __str__(self):
         first_participant = self.participants.first()
@@ -42,15 +42,18 @@ class Chat(models.Model):
 class Message(models.Model):
     id = models.BigIntegerField(unique=True, primary_key=True, default=random_uuid, editable=False)
     sender = models.ForeignKey(
-        CustomUser, related_name="senders", on_delete=models.DO_NOTHING
+        CustomUser, related_name="senders", on_delete=models.CASCADE
     )
     receiver = models.ForeignKey(
-        CustomUser, related_name="receivers", on_delete=models.DO_NOTHING
+        CustomUser, related_name="receivers", on_delete=models.CASCADE
     )
-    chat = models.ForeignKey(Chat, related_name="chats", on_delete=models.DO_NOTHING)
+    chat = models.ForeignKey(Chat, related_name="messages", on_delete=models.CASCADE)
     content = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.sender} to {self.receiver}"
@@ -59,7 +62,12 @@ class Message(models.Model):
         if self.sender == self.receiver:
             raise ValidationError("Sender and receiver cannot be the same user.")
         
-        chat = Chat.objects.filter(Q(participants=self.sender) & Q(participants=self.receiver)).first()
+        chat = Chat.objects.filter(
+            participants=self.sender
+        ).filter(
+            participants=self.receiver
+        ).first()
+        
         if not chat:
             chat = Chat.objects.create()
             chat.participants.add(self.sender, self.receiver)

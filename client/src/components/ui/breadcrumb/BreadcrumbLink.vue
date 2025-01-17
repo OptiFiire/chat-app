@@ -1,11 +1,12 @@
-<script lang="ts" setup>
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
-import { Primitive, type PrimitiveProps } from 'radix-vue'
+<script setup>
+import { cn } from '@/misc/utils';
+import { Primitive } from 'radix-vue';
 
-const props = withDefaults(defineProps<PrimitiveProps & { class?: HTMLAttributes['class'] }>(), {
-  as: 'a',
-})
+const props = defineProps({
+  asChild: { type: Boolean, required: false },
+  as: { type: null, required: false, default: 'a' },
+  class: { type: null, required: false },
+});
 </script>
 
 <template>

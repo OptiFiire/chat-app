@@ -12,8 +12,8 @@
       <form @submit.prevent="onSubmit" class="grid gap-4">
         <div class="grid gap-2">
           <Label for="username">Username</Label>
-          <Input v-model="username" id="username" type="username" placeholder="Enter your username..." required
-            class="rounded-2xl" />
+          <Input v-model="username" id="username" type="text" placeholder="Enter your username..." required
+            autocomplete="true" class="rounded-2xl" />
         </div>
         <div class="grid gap-2">
           <div class="flex items-center">
@@ -22,8 +22,8 @@
               Forgot your password?
             </a>
           </div>
-          <Input v-model="password" id="password" autocomplete="" type="password" placeholder="Enter your password..." required
-            class="rounded-2xl" />
+          <Input v-model="password" id="password" type="password" placeholder="Enter your password..." required
+            autocomplete="true" class="rounded-2xl" />
         </div>
         <span v-if="loginError" class="text-red-500 text-sm">{{ loginError }}</span>
         <Button type="submit" class="w-full rounded-2xl">
@@ -41,15 +41,16 @@
 </template>
 
 <script setup>
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useForm, useField } from 'vee-validate'
-import * as yup from 'yup'
-import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+
+import axios from '@/misc/axios'
+import * as yup from 'yup'
+
+
+const router = useRouter()
+const loginError = ref('')
 
 const schema = yup.object({
   username: yup.string().required('Username is required'),
@@ -57,22 +58,20 @@ const schema = yup.object({
 })
 
 const { handleSubmit, errors } = useForm({
-  validationSchema: schema,
+  validationSchema: schema
 })
 
 const { value: username } = useField('username')
 const { value: password } = useField('password')
 
-const router = useRouter()
-const loginError = ref('')
-
-const onSubmit = handleSubmit(async (values) => {
+const onSubmit = handleSubmit(async (credentials) => {  
   try {
-    const response = await axios.post('http://127.0.0.1:8000/auth/token/login', values)
-    localStorage.setItem('auth_token', response.data.auth_token)
+    const fetchToken = await axios.post('/auth/token/login', credentials)
+    localStorage.setItem('auth_token', fetchToken.data.auth_token)
     router.push({ name: 'home' })
   } catch (e) {
-    loginError.value = e?.response?.data?.detail || 'An error occurred while trying to login.'
+    console.error(e)
+    loginError.value = e.response.data.non_field_errors[0] || 'An error occurred while trying to login.'
   }
 })
 </script>

@@ -14,7 +14,7 @@ const router = createRouter({
       meta: { layout: 'DefaultLayout' },
     },
     {
-      path: '/chat/:id',
+      path: '/chat/:chatId',
       name: 'chat',
       component: ChatView,
       meta: { layout: 'DefaultLayout' },

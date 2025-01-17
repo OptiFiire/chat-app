@@ -13,17 +13,17 @@
                 <div class="grid gap-2">
                     <Label for="email">Email</Label>
                     <Input v-model="email" id="email" type="email" class="rounded-2xl" placeholder="Enter email..."
-                        required />
+                        required autocomplete="true" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="username">Username</Label>
                     <Input v-model="username" id="username" type="text" class="rounded-2xl"
-                        placeholder="Enter username..." required />
+                        placeholder="Enter username..." required autocomplete="true" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="password">Password</Label>
                     <Input v-model="password" id="password" type="password" class="rounded-2xl"
-                        placeholder="Enter password..." required autocomplete />
+                        placeholder="Enter password..." required autocomplete="true" />
                 </div>
                 <span v-if="loginError" class="text-red-500 text-sm">{{ loginError }}</span>
                 <Button type="submit" class="rounded-2xl w-full">
@@ -41,15 +41,12 @@
 </template>
 
 <script setup>
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useForm, useField } from 'vee-validate'
-import * as yup from 'yup'
-import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+
+import axios from '@/misc/axios'
+import * as yup from 'yup'
 
 const schema = yup.object({
     username: yup.string().required('Username is required'),
@@ -69,8 +66,8 @@ const loginError = ref('')
 
 const onSubmit = handleSubmit(async (values) => {
     try {
-        const response = await axios.post('http://127.0.0.1:8000/auth/users/', values)
-        const token = (await axios.post('http://127.0.0.1:8000/auth/token/login', values)).data.auth_token
+        const response = await axios.post('/auth/users/', values)
+        const token = (await axios.post('/auth/token/login', values)).data.auth_token
         localStorage.setItem('auth_token', token)
         router.push({ name: 'home' })
     } catch (e) {

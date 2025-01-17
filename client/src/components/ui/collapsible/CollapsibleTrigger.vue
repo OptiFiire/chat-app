@@ -1,7 +1,10 @@
-<script setup lang="ts">
-import { CollapsibleTrigger, type CollapsibleTriggerProps } from 'radix-vue'
+<script setup>
+import { CollapsibleTrigger } from 'radix-vue';
 
-const props = defineProps<CollapsibleTriggerProps>()
+const props = defineProps({
+  asChild: { type: Boolean, required: false },
+  as: { type: null, required: false },
+});
 </script>
 
 <template>

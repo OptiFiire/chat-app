@@ -9,7 +9,6 @@ import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
-import axios from 'axios';
 
 const router = useRouter();
 const route = useRoute()

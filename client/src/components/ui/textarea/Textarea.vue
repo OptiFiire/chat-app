@@ -1,24 +1,30 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
-import { useVModel } from '@vueuse/core'
+<script setup>
+import { cn } from '@/misc/utils';
+import { useVModel } from '@vueuse/core';
 
-const props = defineProps<{
-  class?: HTMLAttributes['class']
-  defaultValue?: string | number
-  modelValue?: string | number
-}>()
+const props = defineProps({
+  class: { type: null, required: false },
+  defaultValue: { type: [String, Number], required: false },
+  modelValue: { type: [String, Number], required: false },
+});
 
-const emits = defineEmits<{
-  (e: 'update:modelValue', payload: string | number): void
-}>()
+const emits = defineEmits(['update:modelValue']);
 
 const modelValue = useVModel(props, 'modelValue', emits, {
   passive: true,
   defaultValue: props.defaultValue,
-})
+});
 </script>
 
 <template>
-  <textarea v-model="modelValue" :class="cn('flex min-h-[60px] w-full rounded-2xl border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50', props.class)" />
+  <textarea
+    v-model="modelValue"
+    id="textarea"
+    :class="
+      cn(
+        'flex min-h-max w-full rounded-2xl border border-input bg-transparent px-3 text-sm shadow-sm py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+        props.class,
+      )
+    "
+  />
 </template>

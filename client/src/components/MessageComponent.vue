@@ -1,34 +1,28 @@
 <template>
-    <div class="max-w-4xl py-2 px-4 sm:px-6 lg:px-8 mx-auto flex gap-x-2 sm:gap-x-4">
-        <div>
-            <Avatar class="w-10 h-10">
-                <AvatarImage class="w-10" :src="data.avatar" />
-            </Avatar>
-            <div class="space-y-1.5">
-                <p class="text-sm text-gray-800 dark:text-white">
-                    <strong class="font-medium">{{ data.name }}</strong>
-                </p>
-                <p class="text-xs text-gray-800 dark:text-white">
-                    <time>{{ data.avatar }}</time>
+    <div class="w-full py-2 mx-auto flex flex-col gap-x-2">
+        <div class="flex gap-4">
+            <AvatarComponent :src="data.sender.avatar" size="10"/>
+            <div class="flex flex-col">
+                <div class="flex gap-3 font-medium items-end">
+                    <p class="text-md">{{ data.sender.name }}</p>
+                    <p class="text-xs text-neutral-700">
+                        {{ new Date(data.created_at).toLocaleString() }}
+                    </p>
+                </div>
+                <p class="mb-1.5 text-sm font-normal text-neutral-200">
+                    {{ data.content }}
                 </p>
             </div>
         </div>
-
-        <p class="mb-1.5 text-sm text-gray-800 dark:text-white">
-            {{ data.content }}
-        </p>
     </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 defineOptions({
     name: "MessageComponent"
 })
 
 defineProps({
-    data: {
-        type: Object,
-        required: true
-    }
+    data: Object
 })
 </script>

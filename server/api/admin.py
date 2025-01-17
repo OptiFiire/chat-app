@@ -26,7 +26,7 @@ class CustomUserAdmin(UserAdmin, ModelAdmin):
     change_password_form = AdminPasswordChangeForm
     form = CustomUserChangeForm
     search_fields = ["username", "email", "name"]
-    list_display = ["username", "email", "name", "is_staff"]
+    list_display = ["id", "username", "email", "name", "is_staff"]
 
     fieldsets = (
         ("Profile", {"fields": ("name", "avatar", "biography")}),
@@ -82,7 +82,7 @@ class MessageAdmin(ModelAdmin):
 
 
 class ChatAdmin(ModelAdmin):
-    list_display = ("display_participants",)
+    list_display = ("id","display_participants")
     form = ChatForm
     readonly_fields = ("id",)
 
